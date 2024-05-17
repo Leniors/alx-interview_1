@@ -1,51 +1,58 @@
 #!/usr/bin/python3
-"""
-Task 0. Log parsing
-
-A script that reads stdin line by line and computes metrics.
-"""
-
-import sys
+"""4th Project Module"""
 
 
-def printStats(file_size, status):
-    """printStats
-
-    This function takes the total file size and the
-    statues that were called and prints them.
-
-    Arguments:
-        file_size (int): The total file size to be printed.
-        status (dict{int, int}): A dictionary of the statues that were called.
-    """
-    print("File size: {}".format(file_size))
-    for key, value in sorted(status.items()):
-        if value != 0:
-            print("{}: {}".format(key, value))
+ip_regex = r'^(\d{0,3}\.\d{0,3}\.\d{0,3}\.\d{0,3})'
+dash_regex = r'-'
+date_regex = r'\[(\d{4}\-\d{2}\-\d{2} \d{2}\:\d{2}\:\d+\.\d+)\]'
+request_regex = r'"GET \/projects\/260 HTTP\/1.1"'
+status_regex = r'(200|301|400|401|403|404|405|500)'
+file_size_regex = r'(\d+)$'
+regexes = [ip_regex, dash_regex, date_regex,
+           request_regex, status_regex, file_size_regex]
 
 
-total_file_size = 0
-count = 0
-possible_status = {200: 0, 301: 0, 400: 0, 401: 0,
-                   403: 0, 404: 0, 405: 0, 500: 0}
-try:
-    for line in sys.stdin:
-        args = line.split()
+def print_summary(status_count, total_file_size):
+    """Prints the summary of the log parsing."""
+    print(f"File size: {total_file_size}")
+    sorted_keys = sorted(status_count.keys())
+    for key in sorted_keys:
+        print(f"{key}: {status_count[key]}")
 
-        status_code = int(args[-2])
-        file_size = int(args[-1])
 
-        if status_code in possible_status:
-            possible_status[status_code] += 1
+if __name__ == "__main__":
+    import sys
+    import re
 
-        total_file_size += file_size
-        count += 1
+    status_count = {}
+    total_file_size = 0
+    count = 0
 
-        if count == 10:
-            printStats(total_file_size, possible_status)
-            count = 0
-    printStats(total_file_size, possible_status)
-except KeyboardInterrupt:
-    raise
-finally:
-    printStats(total_file_size, possible_status)
+    try:
+        for line in sys.stdin:
+            if count == 10:
+                print_summary(status_count, total_file_size)
+                count = 1
+            else:
+                count += 1
+            line = line.split()
+            try:
+                file_size = line[-1]
+                total_file_size += int(file_size)
+            except (IndexError, ValueError):
+                pass
+            try:
+                status = line[-2]
+                if status in ["200", "301", "400", "401", "403",
+                              "404", "405", "500"]:
+                    if status in status_count.keys():
+                        status_count[status] += 1
+                    else:
+                        status_count[status] = 1
+            except IndexError:
+                pass
+
+        print_summary(status_count, total_file_size)
+    except KeyboardInterrupt:
+        print_summary(status_count, total_file_size)
+        raise

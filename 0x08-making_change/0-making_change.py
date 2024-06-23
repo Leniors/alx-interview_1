@@ -1,9 +1,23 @@
 #!/usr/bin/python3
 """
-makeChangee file
+Task 0. Change comes from within
+
+Determine the fewest number of coins needed to meet a given amount total.
 """
+
+
 def makeChange(coins, total):
-    """ makeChange function
+    """makeChange
+
+    Given a pile of coins of different values, determine the fewest
+    number of coins needed to meet a given amount total.
+
+    Arguments:
+        coins (List): A list (pile) of coins of different values.
+        total (int): The total needed.
+
+    Return:
+        (int): The minimum number of coins needed to meet the total.
     """
     if total <= 0:
         return 0
